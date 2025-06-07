@@ -22,7 +22,7 @@ export default class FractalCanvasRenderer {
         down: "#ef5350",
         line: "#2196f3",
         area: "rgba(5, 1, 1, 0.36)",
-        bg: "#121826"
+        bg: "#191919" // Deep matte background
       },
       ...options
     };
@@ -104,6 +104,9 @@ export default class FractalCanvasRenderer {
     ctx.fillStyle = this.options.colors.bg;
     ctx.fillRect(0, 0, this.canvas.width / this.dpr, this.canvas.height / this.dpr);
 
+    // Optional: Draw grid
+    this.drawGrid(ctx);
+
     // Skip if no data
     if (this.candles.length === 0) {
       ctx.restore();
@@ -147,7 +150,7 @@ export default class FractalCanvasRenderer {
       const high = group.reduce((h, c) => Math.max(h, c.high), -Infinity);
       const low = group.reduce((l, c) => Math.min(l, c.low), Infinity);
 
-      const x = i * (candleWidth + spacing) * this.zoom;
+      const x = Math.round(i * (candleWidth + spacing) * this.zoom);
       const yHigh = this._priceToY(high, minLow, pxPerPrice, paddingBottom);
       const yLow = this._priceToY(low, minLow, pxPerPrice, paddingBottom);
       const yOpen = this._priceToY(open, minLow, pxPerPrice, paddingBottom);
@@ -180,7 +183,7 @@ export default class FractalCanvasRenderer {
     ctx.beginPath();
 
     visible.forEach((candle, i) => {
-      const x = i * (options.candleWidth + options.spacing) * this.zoom;
+      const x = Math.round(i * (options.candleWidth + options.spacing) * this.zoom);
       const y = this._priceToY(candle.close, minLow, pxPerPrice, paddingBottom);
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     });
@@ -196,7 +199,7 @@ export default class FractalCanvasRenderer {
     if (!metrics.visible) return;
 
     const { visible, paddingBottom } = metrics;
-    const lastX = (visible.length - 1) * (options.candleWidth + options.spacing) * this.zoom;
+    const lastX = Math.round((visible.length - 1) * (options.candleWidth + options.spacing) * this.zoom);
     const baseY = this.canvas.height - paddingBottom;
 
     ctx.fillStyle = options.colors.area;
@@ -216,5 +219,19 @@ export default class FractalCanvasRenderer {
     const { maxLOD } = this.options;
     const pxPerCandle = this.canvas.width / (this.viewport.end - this.viewport.start);
     return Math.min(maxLOD, Math.max(1, Math.floor(3 / pxPerCandle)));
+  }
+
+  /** Optional grid helper. */
+  drawGrid(ctx, color = "#1a1f2c", spacing = 80) {
+    const w = this.canvas.width / this.dpr;
+    const h = this.canvas.height / this.dpr;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    for (let x = 0; x < w; x += spacing) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    }
+    for (let y = 0; y < h; y += spacing) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
   }
 }

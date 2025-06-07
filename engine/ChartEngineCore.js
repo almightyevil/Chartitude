@@ -23,6 +23,7 @@ export class ChartEngineCore {
     this.state = new ChartState();
     this.renderer = new FractalCanvasRenderer(canvas, {
       chartType: validateType(options.chartType) ? options.chartType : DEFAULT_CHART_TYPE,
+      backgroundColor: "#191919", // Set light blackish background
       ...options
     });
     this.zoom = 1;
@@ -83,6 +84,14 @@ export class ChartEngineCore {
     }
     this.renderer.setChartType(type);
     this.render();
+  }
+
+  /**
+   * Get internal state reference.
+   * @returns {ChartState}
+   */
+  getState() {
+    return this.state;
   }
 
   /**
